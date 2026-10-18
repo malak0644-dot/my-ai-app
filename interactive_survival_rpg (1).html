@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رحلة البقاء والقرار المصيري | Interactive Survival RPG</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            900: '#0f172a',
+                            950: '#020617',
+                        },
+                        neon: {
+                            cyan: '#00f3ff',
+                            purple: '#b000ff',
+                            gold: '#ffd700',
+                            red: '#ff0055',
+                            green: '#00ff66'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Cairo', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'neon-cyan': '0 0 20px rgba(0, 243, 255, 0.4)',
+                        'neon-purple': '0 0 20px rgba(176, 0, 255, 0.4)',
+                        'neon-gold': '0 0 20px rgba(255, 215, 0, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Cinzel:wght@600;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', 'Inter', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        .font-cinzel {
+            font-family: 'Cinzel', serif;
+        }
+        /* Custom Glowing & Glassmorphism Effects */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glow-text-cyan {
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.7);
+        }
+        .glow-text-purple {
+            text-shadow: 0 0 10px rgba(176, 0, 255, 0.7);
+        }
+        .glow-border-cyan {
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+        }
+        /* Dice Animation */
+        @keyframes rollDice {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.3); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        .rolling {
+            animation: rollDice 0.6s ease-in-out;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f3ff;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
+
+    <!-- Top Navigation Header -->
+    <header class="w-full glass-panel sticky top-0 z-50 border-b border-slate-800 px-4 py-3">
+        <div class="max-w-6xl mx-mx-auto flex justify-between items-center mx-auto">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-cyan-500/10 rounded-lg border border-cyan-500/30 text-cyan-400">
+                    <i class="fa-solid fa-dice-d20 text-2xl animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-bold bg-gradient-to-r from-cyan-400 via-purple-400 to-amber-300 bg-clip-text text-transparent font-cinzel">
+                        رحلة البقاء والقرار المصيري
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Interactive AI Survival RPG</p>
+                </div>
+            </div>
+
+            <!-- Controls & Audio Toggle -->
+            <div class="flex items-center gap-3">
+                <button id="soundToggleBtn" onclick="toggleAudio()" class="px-3 py-1.5 rounded-lg text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center gap-2 transition-all">
+                    <i id="soundIcon" class="fa-solid fa-volume-xmark text-red-400"></i>
+                    <span id="soundText" class="hidden sm:inline">الصوت: إيقاف</span>
+                </button>
+                <button onclick="openSettingsModal()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-6xl w-full mx-auto p-4 flex-1 flex flex-col gap-6">
+
+        <!-- SETUP SCREEN: Theme & Character Selection -->
+        <section id="setupScreen" class="flex-1 flex flex-col justify-center items-center py-6">
+            <div class="w-full max-w-3xl glass-panel p-6 md:p-8 rounded-2xl border border-slate-800 text-center space-y-8">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-white mb-2">اختر عالم مغامرتك اليوم</h2>
+                    <p class="text-slate-400 text-sm md:text-base">كل قرار ستتخذه سيغير القصة بالكامل. القصة تولد بشكل لانهائي بواسطة الذكاء الاصطناعي!</p>
+                </div>
+
+                <!-- World Setting Selection Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-right">
+                    <!-- Theme 1 -->
+                    <div onclick="selectTheme('space')" id="theme-space" class="theme-card cursor-pointer p-4 rounded-xl border border-slate-700 hover:border-cyan-400 bg-slate-900/60 hover:bg-slate-800/80 transition-all duration-300 flex items-start gap-4">
+                        <div class="p-3 bg-cyan-500/20 rounded-lg text-cyan-400 text-2xl">
+                            <i class="fa-solid fa-rocket"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-lg">رحلة الفضاء المجهولة</h3>
+                            <p class="text-xs text-slate-400 mt-1">عالم خيال علمي، سفينة مفقودة، ومخاطر كوكبية مجهولة.</p>
+                        </div>
+                    </div>
+
+                    <!-- Theme 2 -->
+                    <div onclick="selectTheme('island')" id="theme-island" class="theme-card cursor-pointer p-4 rounded-xl border border-slate-700 hover:border-emerald-400 bg-slate-900/60 hover:bg-slate-800/80 transition-all duration-300 flex items-start gap-4">
+                        <div class="p-3 bg-emerald-500/20 rounded-lg text-emerald-400 text-2xl">
+                            <i class="fa-solid fa-skull-crossbones"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-lg">جزيرة الرعب والبقاء</h3>
+                            <p class="text-xs text-slate-400 mt-1">جزيرة معزولة بعد تحطم الطائرة، مخادع وسحرة ووحوش مجهولة.</p>
+                        </div>
+                    </div>
+
+                    <!-- Theme 3 -->
+                    <div onclick="selectTheme('magic')" id="theme-magic" class="theme-card cursor-pointer p-4 rounded-xl border border-slate-700 hover:border-amber-400 bg-slate-900/60 hover:bg-slate-800/80 transition-all duration-300 flex items-start gap-4">
+                        <div class="p-3 bg-amber-500/20 rounded-lg text-amber-400 text-2xl">
+                            <i class="fa-solid fa-hat-wizard"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-lg">مملكة السحر القديمة</h3>
+                            <p class="text-xs text-slate-400 mt-1">تنانين، تعاويذ سحرية، ومملكة مهددة بالسقوط على يد الظلال.</p>
+                        </div>
+                    </div>
+
+                    <!-- Theme 4 -->
+                    <div onclick="selectTheme('cyberpunk')" id="theme-cyberpunk" class="theme-card cursor-pointer p-4 rounded-xl border border-slate-700 hover:border-purple-400 bg-slate-900/60 hover:bg-slate-800/80 transition-all duration-300 flex items-start gap-4">
+                        <div class="p-3 bg-purple-500/20 rounded-lg text-purple-400 text-2xl">
+                            <i class="fa-solid fa-microchip"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-lg">عالم السايبربنك المستقبلي</h3>
+                            <p class="text-xs text-slate-400 mt-1">مدينة السايبر، اختراق الأنظمة، والعصابات الذكية.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Character Name & Language -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-right">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-2">اسم الممتل/البطل:</label>
+                        <input type="text" id="playerNameInput" value="المغامر" placeholder="أدخل اسمك هنا..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-cyan-400 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-2">لغة المغامرة:</label>
+                        <select id="gameLangSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-cyan-400 text-white">
+                            <option value="ar" selected>العربية (Arabic)</option>
+                            <option value="en">English (الإنجليزية)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Start Game Button -->
+                <button onclick="startGame()" class="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 via-purple-600 to-amber-500 hover:from-cyan-400 hover:to-amber-400 text-black font-extrabold text-lg shadow-neon-cyan transition-all transform hover:scale-[1.01] active:scale-[0.99]">
+                    <i class="fa-solid fa-play ml-2"></i> بدء المغامرة الآن
+                </button>
+            </div>
+        </section>
+
+        <!-- GAMEPLAY SCREEN -->
+        <section id="gameScreen" class="hidden flex-1 flex flex-col md:flex-row gap-6">
+
+            <!-- Sidebar: Player Dashboard (Stats & Inventory) -->
+            <div class="w-full md:w-80 flex flex-col gap-4">
+                <div class="glass-panel p-5 rounded-xl border border-slate-800 space-y-4">
+                    <!-- Hero Info Header -->
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 id="uiHeroName" class="font-bold text-lg text-white">المغامر</h3>
+                            <span id="uiThemeTag" class="text-xs text-cyan-400 font-medium">عالم السحر</span>
+                        </div>
+                        <div class="text-2xl text-amber-400">
+                            <i id="uiThemeIcon" class="fa-solid fa-shield-halved"></i>
+                        </div>
+                    </div>
+
+                    <!-- Stats Bars -->
+                    <div class="space-y-3">
+                        <!-- Health (HP) -->
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-red-400 font-bold"><i class="fa-solid fa-heart ml-1"></i> الصحة (HP)</span>
+                                <span id="hpText" class="text-slate-300">100 / 100</span>
+                            </div>
+                            <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                                <div id="hpBar" class="h-full bg-gradient-to-r from-red-600 to-emerald-500 transition-all duration-500" style="width: 100%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Energy -->
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-cyan-400 font-bold"><i class="fa-solid fa-bolt ml-1"></i> الطاقة (Energy)</span>
+                                <span id="energyText" class="text-slate-300">100 / 100</span>
+                            </div>
+                            <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                                <div id="energyBar" class="h-full bg-cyan-500 transition-all duration-500" style="width: 100%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Gold / Money -->
+                        <div class="flex justify-between items-center bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 text-sm">
+                            <span class="text-amber-400 font-bold"><i class="fa-solid fa-coins ml-1"></i> العملات/الذهب</span>
+                            <span id="goldText" class="text-white font-mono font-bold">50</span>
+                        </div>
+                    </div>
+
+                    <!-- Inventory -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider flex items-center gap-1">
+                            <i class="fa-solid fa-briefcase text-slate-500"></i> الحقيبة (Inventory)
+                        </h4>
+                        <div id="inventoryContainer" class="flex flex-wrap gap-1.5 min-h-[50px] p-2 bg-slate-900/60 rounded-lg border border-slate-800/80">
+                            <!-- Dynamic Items Added Here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dice Roll Helper Card -->
+                <div class="glass-panel p-4 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm font-bold text-purple-400">نرد الحظ RPG (d20)</h4>
+                        <p class="text-xs text-slate-400">للخيارات الخطرة أو الصعبة</p>
+                    </div>
+                    <button onclick="rollD20Manual()" id="manualDiceBtn" class="p-3 bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/50 rounded-xl text-purple-300 transition-all flex items-center justify-center">
+                        <i id="manualDiceIcon" class="fa-solid fa-dice-d20 text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Story Panel -->
+            <div class="flex-1 flex flex-col gap-4">
+
+                <!-- Story Display Window -->
+                <div class="glass-panel p-6 rounded-2xl border border-slate-800 flex-1 flex flex-col justify-between min-h-[350px]">
+                    <div id="storyScrollArea" class="space-y-4 max-h-[420px] overflow-y-auto pl-2">
+                        <!-- AI Generated Text injected here -->
+                        <div id="storyText" class="text-slate-200 text-base md:text-lg leading-relaxed space-y-3 font-normal">
+                            <!-- Typing simulation will insert here -->
+                        </div>
+                    </div>
+
+                    <!-- Loading Indicator -->
+                    <div id="aiLoadingIndicator" class="hidden flex items-center justify-center gap-3 py-6 text-cyan-400">
+                        <i class="fa-solid fa-circle-notch fa-spin text-2xl"></i>
+                        <span class="text-sm font-semibold animate-pulse">الذكاء الاصطناعي ينسج مجريات القصة...</span>
+                    </div>
+                </div>
+
+                <!-- Action & Choices Panel -->
+                <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-code-branch text-cyan-400"></i> ماذا ستفعل الآن؟
+                    </h4>
+
+                    <!-- Dynamic Choice Buttons (Up to 4) -->
+                    <div id="choicesContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Choice Buttons Injected Here -->
+                    </div>
+
+                    <!-- Custom Text Input for Custom Action -->
+                    <div class="pt-2 border-t border-slate-800/80 flex gap-2">
+                        <input type="text" id="customActionInput" placeholder="أو اكتب قرارك الخاص بكامل الحرية هنا..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400">
+                        <button onclick="submitCustomAction()" class="px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-black font-bold rounded-xl text-sm transition-all flex items-center gap-2">
+                            <span>نفذ</span>
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- GAME OVER / VICTORY MODAL -->
+        <section id="endModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="glass-panel p-8 rounded-2xl max-w-lg w-full border border-slate-700 text-center space-y-6">
+                <div id="endIconContainer" class="text-5xl text-red-500">
+                    <i class="fa-solid fa-skull"></i>
+                </div>
+                <div>
+                    <h2 id="endTitle" class="text-2xl font-extrabold text-white">نهاية المغامرة</h2>
+                    <p id="endReason" class="text-slate-300 text-sm mt-2">لقد نفدت صحتك تماماً ولم تستطع البقاء.</p>
+                </div>
+
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-right space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">عدد القرارات التي اتخذتها:</span>
+                        <span id="endTurns" class="font-bold text-cyan-400">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">الذهب المجموع:</span>
+                        <span id="endGold" class="font-bold text-amber-400">0</span>
+                    </div>
+                </div>
+
+                <button onclick="restartGame()" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-black font-bold rounded-xl transition-all">
+                    <i class="fa-solid fa-rotate-right ml-2"></i> لعب مغامرة جديدة
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-3 text-center text-xs text-slate-500 border-t border-slate-900">
+        رحلة البقاء والقرار المصيري — مجهزة بقوة الذكاء الاصطناعي Gemini 3 Flash
+    </footer>
+
+    <!-- AUDIO ENGINE (Web Audio API Synthesizer) & GAME LOGIC -->
+    <script>
+        /* -------------------------------------------------------------------------- */
+        /* GLOBAL STATE & CONSTANTS                                                  */
+        /* -------------------------------------------------------------------------- */
+        const apiKey = ""; // Canvas handles auto key insertion at runtime
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+        let gameState = {
+            theme: 'space',
+            playerName: 'المغامر',
+            language: 'ar',
+            hp: 100,
+            energy: 100,
+            gold: 50,
+            inventory: ['سيف صدئ', 'جرعة شفاء صغيرة'],
+            turnCount: 0,
+            history: [],
+            soundEnabled: false
+        };
+
+        const THEMES_CONFIG = {
+            space: {
+                nameAr: 'رحلة الفضاء المجهولة',
+                icon: 'fa-rocket',
+                items: ['مفك بلازما', 'بطارية طوارئ']
+            },
+            island: {
+                nameAr: 'جزيرة الرعب والبقاء',
+                icon: 'fa-skull-crossbones',
+                items: ['حبل مشدود', 'سكين صيد']
+            },
+            magic: {
+                nameAr: 'مملكة السحر القديمة',
+                icon: 'fa-hat-wizard',
+                items: ['عصا سحرية خشبية', 'جرعة شفاء']
+            },
+            cyberpunk: {
+                nameAr: 'عالم السايبربنك المستقبلي',
+                icon: 'fa-microchip',
+                items: ['رقاقة اختراق', 'مسدس ليزري']
+            }
+        };
+
+        /* -------------------------------------------------------------------------- */
+        /* WEB AUDIO SYNTHESIZER (No External Sound Files Required)                   */
+        /* -------------------------------------------------------------------------- */
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function toggleAudio() {
+            gameState.soundEnabled = !gameState.soundEnabled;
+            const soundIcon = document.getElementById('soundIcon');
+            const soundText = document.getElementById('soundText');
+
+            if (gameState.soundEnabled) {
+                initAudio();
+                soundIcon.className = "fa-solid fa-volume-high text-emerald-400";
+                soundText.innerText = "الصوت: مفعّل";
+                playSound('click');
+            } else {
+                soundIcon.className = "fa-solid fa-volume-xmark text-red-400";
+                soundText.innerText = "الصوت: إيقاف";
+            }
+        }
+
+        function playSound(type) {
+            if (!gameState.soundEnabled || !audioCtx) return;
+
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(200, now + 0.08);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'dice') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.linearRampToValueAtTime(800, now + 0.2);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'hit') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.linearRampToValueAtTime(40, now + 0.25);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                }
+            } catch (e) {
+                console.log("Audio play error", e);
+            }
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* SETUP & NAVIGATION                                                         */
+        /* -------------------------------------------------------------------------- */
+        function selectTheme(themeKey) {
+            gameState.theme = themeKey;
+            document.querySelectorAll('.theme-card').forEach(card => {
+                card.classList.remove('border-cyan-400', 'bg-slate-800', 'shadow-neon-cyan');
+            });
+            const selected = document.getElementById(`theme-${themeKey}`);
+            if (selected) {
+                selected.classList.add('border-cyan-400', 'bg-slate-800', 'shadow-neon-cyan');
+            }
+            playSound('click');
+        }
+
+        function startGame() {
+            playSound('click');
+            const nameInput = document.getElementById('playerNameInput').value.trim();
+            if (nameInput) gameState.playerName = nameInput;
+
+            gameState.language = document.getElementById('gameLangSelect').value;
+            gameState.inventory = [...THEMES_CONFIG[gameState.theme].items];
+
+            // Update Dashboard UI
+            document.getElementById('uiHeroName').innerText = gameState.playerName;
+            document.getElementById('uiThemeTag').innerText = THEMES_CONFIG[gameState.theme].nameAr;
+            document.getElementById('uiThemeIcon').className = `fa-solid ${THEMES_CONFIG[gameState.theme].icon}`;
+
+            // Switch Screen
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+
+            updateUI();
+
+            // Fetch First Story Segment
+            fetchAIStory("ابدأ القصة واشرح البداية والوضع الراهن والخطوة الأولى بوضوح.");
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* AI GENERATION & GEMINI API                                                 */
+        /* -------------------------------------------------------------------------- */
+        async function fetchAIStory(playerActionText) {
+            toggleLoading(true);
+
+            // Construct Gemini Payload with JSON Output Schema for robust game state updating
+            const systemPrompt = `أنت محرك لعبة RPG تفاعلية خرافية ومبهرة باللغة ${gameState.language === 'ar' ? 'العربية' : 'الانجليزية'}.
+الثيمة المختارة: ${THEMES_CONFIG[gameState.theme].nameAr}.
+اسم البطل: ${gameState.playerName}.
+إحصائيات البطل الحالية: الصحة=${gameState.hp}, الطاقة=${gameState.energy}, الذهب=${gameState.gold}, الحقيبة=[${gameState.inventory.join(', ')}].
+
+المطلوب منك توليد رد JSON منظم فقط يحتوي على:
+1. "storyText": وصف درامي وتفاعلي ومثير للأحداث والنتيجة بناءً على اختيار اللاعب (حوالي 2 إلى 4 فقرات قصيرة).
+2. "hpChange": التغير في الصحة (رقم موجب للشفاء، أو سالب للضرر مثل -10 أو 0).
+3. "energyChange": التغير في الطاقة (مثلاً -5 أو +10).
+4. "goldChange": التغير في الذهب (مثلاً +20 أو -15).
+5. "itemGained": اسم غرض جديد حصل عليه البطل (إن وجد) أو null.
+6. "itemLost": اسم غرض خسر أو استخدم البطل (إن وجد) أو null.
+7. "choices": مصفوفة تحتوي على 3 أو 4 خيارات حماسية متنوعة ليختار بينها اللاعب للخطوة القادمة.
+8. "isGameOver": boolean (true إذا مات البطل أو انتهت القصة، و false إذا استمرت).`;
+
+            const userPrompt = `القرار الذي اتخذه اللاعب الآن: "${playerActionText}"`;
+
+            const payload = {
+                contents: [
+                    {
+                        role: "user",
+                        parts: [{ text: userPrompt }]
+                    }
+                ],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            storyText: { type: "STRING" },
+                            hpChange: { type: "INTEGER" },
+                            energyChange: { type: "INTEGER" },
+                            goldChange: { type: "INTEGER" },
+                            itemGained: { type: "STRING", nullable: true },
+                            itemLost: { type: "STRING", nullable: true },
+                            choices: {
+                                type: "ARRAY",
+                                items: { type: "STRING" }
+                            },
+                            isGameOver: { type: "BOOLEAN" }
+                        },
+                        required: ["storyText", "hpChange", "energyChange", "goldChange", "choices", "isGameOver"]
+                    }
+                }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                toggleLoading(false);
+
+                if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
+                    const jsonText = result.candidates[0].content.parts[0].text;
+                    const gameData = JSON.parse(jsonText);
+                    processTurnResult(gameData);
+                } else {
+                    renderFallbackStory("حدث التباس في مجريات القدر... لكن المغامرة تستمر!");
+                }
+
+            } catch (error) {
+                console.error("AI Fetch Error:", error);
+                toggleLoading(false);
+                renderFallbackStory("واجه الذكاء الاصطناعي اضطراباً بسيطاً في الاتصال، حاول اتخاذ خيار آخر.");
+            }
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* TURN & STATE MANAGEMENT                                                    */
+        /* -------------------------------------------------------------------------- */
+        function processTurnResult(data) {
+            gameState.turnCount++;
+
+            // Update Health, Energy, Gold
+            gameState.hp = Math.min(100, Math.max(0, gameState.hp + (data.hpChange || 0)));
+            gameState.energy = Math.min(100, Math.max(0, gameState.energy + (data.energyChange || 0)));
+            gameState.gold = Math.max(0, gameState.gold + (data.goldChange || 0));
+
+            // Sound Effects Trigger
+            if (data.hpChange < 0) playSound('hit');
+
+            // Inventory updates
+            if (data.itemGained && data.itemGained !== "null") {
+                gameState.inventory.push(data.itemGained);
+            }
+            if (data.itemLost && data.itemLost !== "null") {
+                gameState.inventory = gameState.inventory.filter(i => i !== data.itemLost);
+            }
+
+            updateUI();
+
+            // Display Story Text
+            document.getElementById('storyText').innerText = data.storyText;
+
+            // Render Choice Buttons
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = '';
+
+            if (data.choices && data.choices.length > 0) {
+                data.choices.forEach((choice, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = "p-3.5 bg-slate-900 hover:bg-cyan-950/60 border border-slate-700 hover:border-cyan-400 rounded-xl text-right text-sm text-slate-200 hover:text-white transition-all flex items-center justify-between group";
+                    btn.onclick = () => makeChoice(choice);
+                    btn.innerHTML = `
+                        <span>${choice}</span>
+                        <i class="fa-solid fa-chevron-left text-xs text-slate-500 group-hover:text-cyan-400 transition-all"></i>
+                    `;
+                    choicesContainer.appendChild(btn);
+                });
+            }
+
+            // Check Game Over Condition
+            if (gameState.hp <= 0 || data.isGameOver) {
+                triggerGameOver(gameState.hp <= 0 ? "لقد نفدت صحتك تماماً وزالت أنفاسك الأخير." : "انتهت أحداث القصة والرحلة هنا.");
+            }
+        }
+
+        function makeChoice(choiceText) {
+            playSound('click');
+            fetchAIStory(choiceText);
+        }
+
+        function submitCustomAction() {
+            const input = document.getElementById('customActionInput');
+            const customText = input.value.trim();
+            if (!customText) return;
+
+            playSound('click');
+            input.value = '';
+            fetchAIStory(customText);
+        }
+
+        function rollD20Manual() {
+            const icon = document.getElementById('manualDiceIcon');
+            icon.classList.add('rolling');
+            playSound('dice');
+
+            setTimeout(() => {
+                icon.classList.remove('rolling');
+                const roll = Math.floor(Math.random() * 20) + 1;
+                let outcomeText = `رميت النرد وكانت النتيجة ${roll} من 20: `;
+                if (roll >= 15) outcomeText += "نجاح باهر وضخامة في الحركة!";
+                else if (roll >= 8) outcomeText += "نجاح متوسط مع بعض التحدي.";
+                else outcomeText += "فشل ومخاطرة غير محسوبة!";
+
+                fetchAIStory(outcomeText);
+            }, 600);
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* UI HELPERS                                                                 */
+        /* -------------------------------------------------------------------------- */
+        function updateUI() {
+            // HP Bar
+            document.getElementById('hpText').innerText = `${gameState.hp} / 100`;
+            document.getElementById('hpBar').style.width = `${gameState.hp}%`;
+
+            // Energy Bar
+            document.getElementById('energyText').innerText = `${gameState.energy} / 100`;
+            document.getElementById('energyBar').style.width = `${gameState.energy}%`;
+
+            // Gold
+            document.getElementById('goldText').innerText = gameState.gold;
+
+            // Inventory
+            const invContainer = document.getElementById('inventoryContainer');
+            invContainer.innerHTML = '';
+            if (gameState.inventory.length === 0) {
+                invContainer.innerHTML = `<span class="text-xs text-slate-500 p-1">الحقيبة فارغة</span>`;
+            } else {
+                gameState.inventory.forEach(item => {
+                    const badge = document.createElement('span');
+                    badge.className = "px-2.5 py-1 bg-slate-800 border border-slate-700 rounded-md text-xs text-cyan-300 flex items-center gap-1.5";
+                    badge.innerHTML = `<i class="fa-solid fa-box text-[10px] text-cyan-500"></i> ${item}`;
+                    invContainer.appendChild(badge);
+                });
+            }
+        }
+
+        function toggleLoading(isLoading) {
+            const indicator = document.getElementById('aiLoadingIndicator');
+            const choicesContainer = document.getElementById('choicesContainer');
+            if (isLoading) {
+                indicator.classList.remove('hidden');
+                choicesContainer.classList.add('opacity-40', 'pointer-events-none');
+            } else {
+                indicator.classList.add('hidden');
+                choicesContainer.classList.remove('opacity-40', 'pointer-events-none');
+            }
+        }
+
+        function renderFallbackStory(msg) {
+            document.getElementById('storyText').innerText = msg;
+            document.getElementById('choicesContainer').innerHTML = `
+                <button onclick="fetchAIStory('أكمل القصة')" class="p-3 bg-cyan-600 text-black font-bold rounded-xl text-sm w-full">إعادة المحاولة</button>
+            `;
+        }
+
+        function triggerGameOver(reason) {
+            document.getElementById('endReason').innerText = reason;
+            document.getElementById('endTurns').innerText = gameState.turnCount;
+            document.getElementById('endGold').innerText = gameState.gold;
+            document.getElementById('endModal').classList.remove('hidden');
+        }
+
+        function restartGame() {
+            gameState.hp = 100;
+            gameState.energy = 100;
+            gameState.gold = 50;
+            gameState.turnCount = 0;
+            document.getElementById('endModal').classList.add('hidden');
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('setupScreen').classList.remove('hidden');
+        }
+
+        function openSettingsModal() {
+            alert("إعدادات اللعبة: الصوت مفعل عبر السنثسايزر الذكي. استمتع بالمغامرة!");
+        }
+
+        // Initialize default UI selection
+        selectTheme('space');
+    </script>
+</body>
+</html>
