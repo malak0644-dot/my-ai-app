@@ -13,14 +13,14 @@ if not api_key:
 else:
     client = genai.Client(api_key=api_key)
 
-    product_name = st.text_input("اسم المنتج", placeholder="مثال: حقيبة جلدية فاخرة")
+    product_name = st.text_input("اسم المنتج", placeholder="مثال: رائحة نسائية فاخرة")
 
     if st.button("توليد الإعلان ✨"):
         if product_name:
             with st.spinner("جاري كتابة الإعلان..."):
                 try:
                     response = client.models.generate_content(
-                        model="gemini-2.5-flash",
+                        model="gemini-3.8-flash",
                         contents=f"اكتب إعلاناً تسويقياً جذاباً وقصيراً لمنصات التواصل الاجتماعي للمنتج التالي: {product_name}"
                     )
                     st.success("تم إنشاء الإعلان بنجاح!")
